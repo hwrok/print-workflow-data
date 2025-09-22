@@ -7,7 +7,7 @@ See [github documentation](https://docs.github.com/en/actions/reference/workflow
 ## example usage:
 
 ```yaml
-- uses: hwrok/print-workflow-data
+- uses: hwrok/print-workflow-data@v1
   with:
     caller-inputs: ${{ toJSON(inputs) }} # optional
     caller-needs: ${{ toJSON(needs) }} # optional
