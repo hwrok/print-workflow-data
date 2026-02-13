@@ -7,15 +7,15 @@ branding:
 
 inputs:
   caller-inputs:
-    description: '`caller-inputs: ${{ toJSON(inputs) }}`'
+    description: 'workflow inputs as toJSON(inputs)'
     required: false
     default: ''
   caller-needs:
-    description: '`caller-needs: ${{ toJSON(needs) }}`'
+    description: 'job dependency results as toJSON(needs)'
     required: false
     default: ''
   caller-vars:
-    description: 'pass via `caller-vars: ${{ toJSON(vars) }}` (generally safe unless secrets have been mismanaged)'
+    description: 'repository/org variables as toJSON(vars) — generally safe unless secrets have been mismanaged'
     required: false
     default: ''
   extras:

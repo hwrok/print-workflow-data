@@ -9,10 +9,10 @@ jobs:
     name: validate
     runs-on: ubuntu-latest
     steps:
-      - uses: hwrok/print-workflow-data@v1
-
       - name: checkout
         uses: actions/checkout@v6
+
+      - uses: ./
 
       - name: pnpm
         uses: pnpm/action-setup@v4
