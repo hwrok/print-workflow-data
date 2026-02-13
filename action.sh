@@ -51,8 +51,10 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   [ "$GITHUB_BASE_REF" = "$DEFAULT_BRANCH" ] && is_default_target="true"
 
   github_context_body=$(cat <<EOF
+github.repository       : $GITHUB_REPOSITORY
 github.actor            : $GITHUB_ACTOR
 github.triggering_actor : $TRIGGERING_ACTOR
+github.job              : $GITHUB_JOB
 github.workflow         : $GITHUB_WORKFLOW
 github.workflow_ref     : $GITHUB_WORKFLOW_REF
 github.run_id           : $GITHUB_RUN_ID
@@ -60,6 +62,7 @@ github.run_number       : $GITHUB_RUN_NUMBER
 github.run_attempt      : $GITHUB_RUN_ATTEMPT
 github.event_name       : $GITHUB_EVENT_NAME
 github.event.action     : $EVENT_ACTION
+github.event.pr_number  : $PR_NUMBER
 github.base_ref         : $GITHUB_BASE_REF
 github.head_ref         : $GITHUB_HEAD_REF
 is_default_branch       : $is_default_branch
