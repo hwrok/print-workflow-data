@@ -12,7 +12,8 @@ jobs:
       - name: checkout
         uses: actions/checkout@v6
 
-      - uses: ./
+      - name: print workflow data (uses self)
+        uses: ./
 
       - name: pnpm
         uses: pnpm/action-setup@v4
