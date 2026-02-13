@@ -12,8 +12,10 @@
       "Read(./LICENSE)",
       "Read(./README.md)",
       "Read(./action.yml)",
+      "Read(./action.sh)",
       "Read(./package.json)",
-      "Read(./utility/**)"
+      "Read(./utility/**)",
+      "Read(./tests/**)"
     ]
   }
 }

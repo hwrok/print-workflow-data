@@ -11,12 +11,15 @@ on:
         description: 'version tag'
         value: ${{ jobs.release.outputs.tag }}
 
+concurrency:
+  group: release
+
 jobs:
   release:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.compute_version.outputs.semVer }}
-      tag: ${{ steps.create_tag.outputs.tag }}
+      tag: ${{ steps.check_tag.outputs.tag }}
     permissions:
       contents: write
 
@@ -46,8 +49,9 @@ jobs:
         id: check_tag
         run: |
           tag="v${{ steps.compute_version.outputs.semVer }}"
+          echo "tag=$tag" >> $GITHUB_OUTPUT
           if git rev-parse "$tag" >/dev/null 2>&1; then
-            echo "Tag $tag already exists — skipping."
+            echo "::warning::Tag $tag already exists — skipping release."
           else
             echo "should_tag=true" >> $GITHUB_OUTPUT
           fi
@@ -60,19 +64,17 @@ jobs:
 
       - name: create tag
         if: steps.check_tag.outputs.should_tag
-        id: create_tag
         run: |
-          tag="v${{ steps.compute_version.outputs.semVer }}"
+          tag="${{ steps.check_tag.outputs.tag }}"
           git tag "$tag"
           git push origin "$tag"
-          echo "tag=$tag" >> $GITHUB_OUTPUT
 
       - name: changelog
         if: steps.check_tag.outputs.should_tag
         id: changelog
         run: |
-          CURRENT_TAG="${{ steps.create_tag.outputs.tag }}"
-          PREV_TAG=$(git tag --sort=-committerdate | grep -v "$CURRENT_TAG" | head -n 1)
+          CURRENT_TAG="${{ steps.check_tag.outputs.tag }}"
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "$CURRENT_TAG" | head -n 1)
 
           if [ -z "$PREV_TAG" ]; then
             PREV_TAG=$(git rev-list --max-parents=0 HEAD)
@@ -80,9 +82,10 @@ jobs:
 
           CHANGELOG=$(git log --pretty="- %s (%h)" "$PREV_TAG".."$CURRENT_TAG")
 
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          DELIMITER=$(openssl rand -hex 16)
+          echo "CHANGELOG<<$DELIMITER" >> $GITHUB_ENV
           echo "$CHANGELOG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "$DELIMITER" >> $GITHUB_ENV
 
       - name: update tracking tag
         if: steps.check_tag.outputs.should_tag
@@ -98,10 +101,10 @@ jobs:
         if: steps.check_tag.outputs.should_tag
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.create_tag.outputs.tag }}
-          name: 'Release ${{ steps.create_tag.outputs.tag }}'
+          tag_name: ${{ steps.check_tag.outputs.tag }}
+          name: 'Release ${{ steps.check_tag.outputs.tag }}'
           body: |
-            ## Release ${{ steps.create_tag.outputs.tag }}
+            ## Release ${{ steps.check_tag.outputs.tag }}
 
             ### Changes
             ${{ env.CHANGELOG }}

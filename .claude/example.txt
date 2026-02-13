@@ -1,0 +1,42 @@
+┌────────────────┐
+│ github context │
+└────────────────┘
+github.actor            : kredje
+github.triggering_actor : kredje
+github.workflow         : CICD
+github.workflow_ref     : jumpmindinc/commerce-customer-console/.github/workflows/cicd.yaml@refs/heads/main
+github.run_id           : 21961833622
+github.run_number       : 281
+github.run_attempt      : 1
+github.event_name       : push
+github.event.action     :
+github.base_ref         :
+github.head_ref         :
+is_default_branch       : true
+is_default_target       : false
+github.ref              : refs/heads/main
+github.ref_name         : main
+github.sha              : 486ee9253735544334e0607b25a2e5b7a9258272
+┌────────────────┐
+│ matrix context │
+└────────────────┘
+n/a
+┌─────────────┐
+│ job context │
+└─────────────┘
+{
+  "check_run_id": 63441063310,
+  "status": "success"
+}
+┌────────────────┐
+│ runner context │
+└────────────────┘
+{
+  "os": "Linux",
+  "arch": "X64",
+  "name": "runs-on--i-008157e079767c8f4--VbIEmfPqKc",
+  "environment": "self-hosted",
+  "tool_cache": "/opt/hostedtoolcache",
+  "temp": "/home/runner/_work/_temp",
+  "workspace": "/home/runner/_work/commerce-customer-console"
+}

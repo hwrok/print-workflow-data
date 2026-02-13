@@ -1,0 +1,53 @@
+┌────────────────┐
+│ github context │
+└────────────────┘
+github.actor            : testuser
+github.triggering_actor : testuser
+github.workflow         : CI
+github.workflow_ref     : owner/repo/.github/workflows/ci.yml@refs/heads/main
+github.run_id           : 123456789
+github.run_number       : 42
+github.run_attempt      : 1
+github.event_name       : push
+github.event.action     :
+github.base_ref         :
+github.head_ref         :
+is_default_branch       : true
+is_default_target       : false
+github.ref              : refs/heads/main
+github.ref_name         : main
+github.sha              : abc1234def5678
+┌────────────────┐
+│ matrix context │
+└────────────────┘
+os   : ubuntu-latest
+node : 20
+┌─────────────┐
+│ job context │
+└─────────────┘
+status       : success
+check_run_id : 99999
+┌────────────────┐
+│ runner context │
+└────────────────┘
+os          : Linux
+arch        : X64
+name        : runner-1
+environment : github-hosted
+┌───────────────┐
+│ caller inputs │
+└───────────────┘
+deploy : true
+env    : staging
+┌──────────────┐
+│ caller needs │
+└──────────────┘
+some_dep : {"result":"success"}
+┌─────────────┐
+│ caller vars │
+└─────────────┘
+SOME_VAR : the_value
+┌────────┐
+│ extras │
+└────────┘
+custom : data
