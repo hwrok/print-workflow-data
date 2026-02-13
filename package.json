@@ -1,0 +1,18 @@
+{
+  "name": "print-workflow-data",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "spellcheck": "cspell -c utility/cspell/cspell.config.json --no-progress **",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint": "pnpm format && pnpm spellcheck",
+    "lint:fix": "pnpm format:fix && pnpm spellcheck"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "cspell": "^9.6.4",
+    "prettier": "^3.8.1"
+  }
+}

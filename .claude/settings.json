@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "companyAnnouncements": ["print-workflow-data development"],
+  "permissions": {
+    "allow": [
+      "Read(./.claude/**)",
+      "Read(./.github/**)",
+      "Read(./.gitignore)",
+      "Read(./.nvmrc)",
+      "Read(./.prettierignore)",
+      "Read(./.prettierrc)",
+      "Read(./LICENSE)",
+      "Read(./README.md)",
+      "Read(./action.yml)",
+      "Read(./package.json)",
+      "Read(./utility/**)"
+    ]
+  }
+}

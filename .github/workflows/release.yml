@@ -1,18 +1,18 @@
-name: Release
+name: release
 
 on:
   workflow_dispatch:
   workflow_call:
     outputs:
       version:
-        description: "semantic version"
-        value: ${{ jobs.create-release.outputs.version }}
+        description: 'version'
+        value: ${{ jobs.release.outputs.version }}
       tag:
-        description: "semantic version tag"
-        value: ${{ jobs.create-release.outputs.tag }}
+        description: 'version tag'
+        value: ${{ jobs.release.outputs.tag }}
 
 jobs:
-  create-release:
+  release:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.compute_version.outputs.semVer }}
@@ -23,26 +23,26 @@ jobs:
     steps:
       - uses: hwrok/print-workflow-data@v1
 
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Install GitVersion
+      - name: install gitversion
         uses: gittools/actions/gitversion/setup@v4
         with:
-          versionSpec: "6.3.x"
+          versionSpec: '6.3.x'
           preferLatestVersion: true
 
-      - name: Compute Version
+      - name: compute version
         id: compute_version
         uses: gittools/actions/gitversion/execute@v4
         with:
           configFilePath: .github/.gitversion.yml
 
-      - run: echo "Computed SemVer:${{ steps.compute_version.outputs.semVer }}"
+      - run: echo "version:${{ steps.compute_version.outputs.semVer }}"
 
-      - name: Check Tag Exists
+      - name: check tag
         id: check_tag
         run: |
           tag="v${{ steps.compute_version.outputs.semVer }}"
@@ -52,13 +52,13 @@ jobs:
             echo "should_tag=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Configure Git
+      - name: configure git
         if: steps.check_tag.outputs.should_tag
         run: |
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
-      - name: Create Tag
+      - name: create tag
         if: steps.check_tag.outputs.should_tag
         id: create_tag
         run: |
@@ -67,7 +67,7 @@ jobs:
           git push origin "$tag"
           echo "tag=$tag" >> $GITHUB_OUTPUT
 
-      - name: Build Changelog
+      - name: changelog
         if: steps.check_tag.outputs.should_tag
         id: changelog
         run: |
@@ -84,12 +84,22 @@ jobs:
           echo "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Create Release
+      - name: update tracking tag
+        if: steps.check_tag.outputs.should_tag
+        run: |
+          SEMVER="${{ steps.compute_version.outputs.semVer }}"
+          MAJOR_VERSION=$(echo $SEMVER | cut -d '.' -f 1)
+          TRACKING_TAG="v$MAJOR_VERSION"
+
+          git tag -f $TRACKING_TAG
+          git push origin $TRACKING_TAG -f
+
+      - name: create release
         if: steps.check_tag.outputs.should_tag
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.create_tag.outputs.tag }}
-          name: "Release ${{ steps.create_tag.outputs.tag }}"
+          name: 'Release ${{ steps.create_tag.outputs.tag }}'
           body: |
             ## Release ${{ steps.create_tag.outputs.tag }}
 
