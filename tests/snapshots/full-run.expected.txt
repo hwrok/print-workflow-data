@@ -1,8 +1,10 @@
 ┌────────────────┐
 │ github context │
 └────────────────┘
+github.repository       : owner/repo
 github.actor            : testuser
 github.triggering_actor : testuser
+github.job              : build
 github.workflow         : CI
 github.workflow_ref     : owner/repo/.github/workflows/ci.yml@refs/heads/main
 github.run_id           : 123456789
@@ -10,6 +12,7 @@ github.run_number       : 42
 github.run_attempt      : 1
 github.event_name       : push
 github.event.action     :
+github.event.pr_number  :
 github.base_ref         :
 github.head_ref         :
 is_default_branch       : true
@@ -46,7 +49,7 @@ some_dep : {"result":"success"}
 ┌─────────────┐
 │ caller vars │
 └─────────────┘
-SOME_VAR : the_value
+SOME_VAR : the-value
 ┌────────┐
 │ extras │
 └────────┘

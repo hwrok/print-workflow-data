@@ -6,8 +6,10 @@ setup() {
 }
 
 set_all_env_vars() {
+  export GITHUB_REPOSITORY="owner/repo"
   export GITHUB_ACTOR="testuser"
   export TRIGGERING_ACTOR="testuser"
+  export GITHUB_JOB="build"
   export GITHUB_WORKFLOW="CI"
   export GITHUB_WORKFLOW_REF="owner/repo/.github/workflows/ci.yml@refs/heads/main"
   export GITHUB_RUN_ID="123456789"
@@ -15,6 +17,7 @@ set_all_env_vars() {
   export GITHUB_RUN_ATTEMPT="1"
   export GITHUB_EVENT_NAME="push"
   export EVENT_ACTION=""
+  export PR_NUMBER=""
   export GITHUB_BASE_REF=""
   export GITHUB_HEAD_REF=""
   export DEFAULT_BRANCH="main"
