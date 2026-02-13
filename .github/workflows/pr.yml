@@ -1,4 +1,5 @@
 name: pr
+
 on:
   pull_request:
     branches:
@@ -6,38 +7,4 @@ on:
 
 jobs:
   validate:
-    name: validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v6
-
-      - name: print workflow data (uses self)
-        uses: ./
-
-      - name: pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: node
-        uses: actions/setup-node@v6.2.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: pnpm install
-        id: install-deps
-        run: pnpm install
-
-      - name: check - tests
-        if: always() && steps.install-deps.outcome == 'success'
-        run: pnpm test
-
-      - name: check - formatting
-        if: always() && steps.install-deps.outcome == 'success'
-        run: pnpm format
-
-      - name: check - spelling
-        if: always() && steps.install-deps.outcome == 'success'
-        run: pnpm spellcheck
+    uses: ./.github/workflows/validate.yml
