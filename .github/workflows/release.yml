@@ -1,0 +1,112 @@
+name: release
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      version:
+        description: 'version'
+        value: ${{ jobs.release.outputs.version }}
+      tag:
+        description: 'version tag'
+        value: ${{ jobs.release.outputs.tag }}
+
+concurrency:
+  group: release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.compute_version.outputs.semVer }}
+      tag: ${{ steps.check_tag.outputs.tag }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: hwrok/print-workflow-data@v1
+
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: install gitversion
+        uses: gittools/actions/gitversion/setup@v4
+        with:
+          versionSpec: '6.3.x'
+          preferLatestVersion: true
+
+      - name: compute version
+        id: compute_version
+        uses: gittools/actions/gitversion/execute@v4
+        with:
+          configFilePath: .github/.gitversion.yml
+
+      - run: echo "version:${{ steps.compute_version.outputs.semVer }}"
+
+      - name: check tag
+        id: check_tag
+        run: |
+          tag="v${{ steps.compute_version.outputs.semVer }}"
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "::warning::Tag $tag already exists — skipping release."
+          else
+            echo "should_tag=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: configure git
+        if: steps.check_tag.outputs.should_tag
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: create tag
+        if: steps.check_tag.outputs.should_tag
+        run: |
+          tag="${{ steps.check_tag.outputs.tag }}"
+          git tag "$tag"
+          git push origin "$tag"
+
+      - name: changelog
+        if: steps.check_tag.outputs.should_tag
+        id: changelog
+        run: |
+          CURRENT_TAG="${{ steps.check_tag.outputs.tag }}"
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "$CURRENT_TAG" | head -n 1)
+
+          if [ -z "$PREV_TAG" ]; then
+            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          CHANGELOG=$(git log --pretty="- %s (%h)" "$PREV_TAG".."$CURRENT_TAG")
+
+          DELIMITER=$(openssl rand -hex 16)
+          echo "CHANGELOG<<$DELIMITER" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "$DELIMITER" >> $GITHUB_ENV
+
+      - name: update tracking tag
+        if: steps.check_tag.outputs.should_tag
+        run: |
+          SEMVER="${{ steps.compute_version.outputs.semVer }}"
+          MAJOR_VERSION=$(echo $SEMVER | cut -d '.' -f 1)
+          TRACKING_TAG="v$MAJOR_VERSION"
+
+          git tag -f $TRACKING_TAG
+          git push origin $TRACKING_TAG -f
+
+      - name: create release
+        if: steps.check_tag.outputs.should_tag
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.check_tag.outputs.tag }}
+          name: 'Release ${{ steps.check_tag.outputs.tag }}'
+          body: |
+            ## Release ${{ steps.check_tag.outputs.tag }}
+
+            ### Changes
+            ${{ env.CHANGELOG }}
+          draft: false
+          prerelease: false
