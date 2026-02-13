@@ -24,12 +24,12 @@ jobs:
       contents: write
 
     steps:
-      - uses: hwrok/print-workflow-data@v1
-
       - name: checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - uses: ./
 
       - name: install gitversion
         uses: gittools/actions/gitversion/setup@v4
