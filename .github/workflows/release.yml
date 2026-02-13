@@ -29,7 +29,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./
+      - name: print workflow data (uses self)
+        uses: ./
 
       - name: install gitversion
         uses: gittools/actions/gitversion/setup@v4
