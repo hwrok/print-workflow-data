@@ -33,6 +33,22 @@ jobs:
         if: always() && steps.install-deps.outcome == 'success'
         run: pnpm test
 
+      - name: check - runner smoke
+        if: always() && steps.install-deps.outcome == 'success'
+        env:
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          MATRIX_CONTEXT: ${{ matrix && toJSON(matrix) || 'n/a' }}
+          JOB_CONTEXT: ${{ toJSON(job) }}
+          RUNNER_CONTEXT: ${{ toJSON(runner) }}
+          CALLER_INPUTS: ${{ toJSON(inputs) }}
+          CALLER_NEEDS: 'n/a'
+          CALLER_VARS: 'n/a'
+          EXTRAS: '{"msg":"100% 👨‍👩‍👧‍👦 #!@ -n"}'
+        run: pnpm test:runner
+
       - name: check - formatting
         if: always() && steps.install-deps.outcome == 'success'
         run: pnpm format
@@ -40,3 +56,36 @@ jobs:
       - name: check - spelling
         if: always() && steps.install-deps.outcome == 'success'
         run: pnpm spellcheck
+
+  # breaks action.sh on purpose and runs it like a consumer would - the job must survive
+  never-breaks-consumer:
+    name: never breaks consumer (${{ matrix.sabotage }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sabotage: [exit-1, missing, syntax-error, not-executable]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+
+      - name: sabotage action.sh
+        env:
+          MODE: ${{ matrix.sabotage }}
+        run: |
+          case "$MODE" in
+            exit-1) printf '#!/usr/bin/env bash\nexit 1\n' > action.sh ;;
+            missing) rm action.sh ;;
+            syntax-error) printf '#!/usr/bin/env bash\nif then fi\n' > action.sh ;;
+            not-executable) chmod -x action.sh ;;
+            *) echo "::error::unknown sabotage mode: $MODE"; exit 1 ;;
+          esac
+
+      - name: run sabotaged action
+        id: action
+        uses: ./
+
+      - name: assert consumer job kept going
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: test "$OUTCOME" = success

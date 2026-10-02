@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set +eo pipefail
 
 # formats a value for display
 # json objects -> aligned key:value table
@@ -12,22 +11,27 @@ format_value() {
     return
   fi
   if ! command -v jq >/dev/null 2>&1; then
-    echo "$value"
+    printf '%s\n' "$value"
     return
   fi
-  if echo "$value" | jq -e 'type == "object"' >/dev/null 2>&1; then
-    echo "$value" | jq -r '
+  # {} is what toJSON(inputs) on push / toJSON(needs) with no needs gives you
+  if printf '%s' "$value" | jq -e 'type == "object" and length == 0' >/dev/null 2>&1; then
+    echo "{}"
+    return
+  fi
+  if printf '%s' "$value" | jq -e 'type == "object"' >/dev/null 2>&1; then
+    printf '%s' "$value" | jq -r '
       (keys | map(length) | max) as $w |
       to_entries[] |
       "\(.key + (" " * ($w - (.key | length)))) : \(.value | if type == "string" then . elif type == "null" then "" else tojson end)"
     '
     return
   fi
-  if echo "$value" | jq -e '.' >/dev/null 2>&1; then
-    echo "$value" | jq '.'
+  if printf '%s' "$value" | jq -e '.' >/dev/null 2>&1; then
+    printf '%s' "$value" | jq '.'
     return
   fi
-  echo "$value"
+  printf '%s\n' "$value"
 }
 
 # prints a labeled section with a colored box header
@@ -45,10 +49,19 @@ print_section() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  is_default_branch="false"
-  is_default_target="false"
-  [ "$GITHUB_REF_NAME" = "$DEFAULT_BRANCH" ] && is_default_branch="true"
-  [ "$GITHUB_BASE_REF" = "$DEFAULT_BRANCH" ] && is_default_target="true"
+  # DEFAULT_BRANCH is empty when the event payload has no repository object
+  is_default_branch="unknown"
+  is_default_target="unknown"
+  if [ -n "$DEFAULT_BRANCH" ]; then
+    is_default_branch="false"
+    is_default_target="false"
+    if [ "$GITHUB_REF_NAME" = "$DEFAULT_BRANCH" ]; then
+      is_default_branch="true"
+    fi
+    if [ "$GITHUB_BASE_REF" = "$DEFAULT_BRANCH" ]; then
+      is_default_target="true"
+    fi
+  fi
 
   github_context_body=$(cat <<EOF
 github.repository       : $GITHUB_REPOSITORY
