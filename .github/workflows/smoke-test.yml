@@ -1,9 +1,12 @@
 name: smoke-test
 
-on:
+on: # zizmor: ignore[dangerous-triggers]
   workflow_run:
     workflows: [release]
     types: [completed]
+    branches: [main]
+
+permissions: {}
 
 jobs:
   smoke-test:
@@ -11,5 +14,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: resolve v1
+        id: resolve
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          refs="$(git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY")"
+          versions_at() {
+            awk -v sha="$1" '$1 == sha && $2 ~ /^refs\/tags\/v[0-9]+\.[0-9]+\.[0-9]+$/ {
+              sub("refs/tags/", "", $2); print $2
+            }' <<< "$refs" | paste -sd, -
+          }
+          v1_sha="$(awk '$2 == "refs/tags/v1" {print $1}' <<< "$refs")"
+          v1_versions="$(versions_at "$v1_sha")"
+          head_versions="$(versions_at "$HEAD_SHA")"
+
+          {
+            echo "v1_sha=$v1_sha"
+            echo "head_versions=$head_versions"
+            echo "extras=$(jq -nc \
+              --arg v1_sha "$v1_sha" \
+              --arg v1_versions "$v1_versions" \
+              --arg release_sha "$HEAD_SHA" \
+              --arg release_versions "$head_versions" \
+              '{v1_sha: $v1_sha, v1_versions: $v1_versions,
+                release_sha: $release_sha, release_versions: $release_versions}')"
+          } >> "$GITHUB_OUTPUT"
+
+      # floating tag on purpose - this is the consumer's view of what shipped
       - name: print workflow data (smoke-test)
-        uses: hwrok/print-workflow-data@v1
+        uses: hwrok/print-workflow-data@v1 # zizmor: ignore[unpinned-uses]
+        with:
+          extras: ${{ steps.resolve.outputs.extras }}
+
+      - name: assert v1 moved
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          V1_SHA: ${{ steps.resolve.outputs.v1_sha }}
+          HEAD_VERSIONS: ${{ steps.resolve.outputs.head_versions }}
+        run: |
+          if [ -z "$HEAD_VERSIONS" ]; then
+            echo "::notice::release didn't tag $HEAD_SHA (no releasable commits) - v1 is still $V1_SHA"
+            exit 0
+          fi
+          if [ "$V1_SHA" != "$HEAD_SHA" ]; then
+            echo "::error::$HEAD_VERSIONS was released at $HEAD_SHA but v1 points at $V1_SHA"
+            exit 1
+          fi
+          echo "v1 -> $HEAD_VERSIONS ($HEAD_SHA)"

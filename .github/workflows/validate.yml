@@ -3,24 +3,28 @@ name: validate
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     name: validate
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: print workflow data (uses self)
         uses: ./
 
+      # see packageManager in package.json
       - name: pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
       - name: node
-        uses: actions/setup-node@v6.2.0
+        uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
@@ -33,22 +37,6 @@ jobs:
         if: always() && steps.install-deps.outcome == 'success'
         run: pnpm test
 
-      - name: check - runner smoke
-        if: always() && steps.install-deps.outcome == 'success'
-        env:
-          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
-          EVENT_ACTION: ${{ github.event.action }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          MATRIX_CONTEXT: ${{ matrix && toJSON(matrix) || 'n/a' }}
-          JOB_CONTEXT: ${{ toJSON(job) }}
-          RUNNER_CONTEXT: ${{ toJSON(runner) }}
-          CALLER_INPUTS: ${{ toJSON(inputs) }}
-          CALLER_NEEDS: 'n/a'
-          CALLER_VARS: 'n/a'
-          EXTRAS: '{"msg":"100% 👨‍👩‍👧‍👦 #!@ -n"}'
-        run: pnpm test:runner
-
       - name: check - formatting
         if: always() && steps.install-deps.outcome == 'success'
         run: pnpm format
@@ -56,6 +44,45 @@ jobs:
       - name: check - spelling
         if: always() && steps.install-deps.outcome == 'success'
         run: pnpm spellcheck
+
+      - name: check - workflows
+        if: always() && steps.install-deps.outcome == 'success'
+        run: pnpm lint:actions
+
+  runner-smoke:
+    name: runner smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: print workflow data (uses self)
+        uses: ./
+
+      # ref: action.yml env
+      - name: runner smoke
+        env:
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          MATRIX_CONTEXT: ${{ toJSON(matrix) }}
+          JOB_CONTEXT: ${{ toJSON(job) }}
+          RUNNER_CONTEXT: ${{ toJSON(runner) }}
+          CALLER_INPUTS: ${{ toJSON(inputs) }}
+          CALLER_NEEDS: 'n/a'
+          CALLER_VARS: 'n/a'
+          EXTRAS: '{"msg":"100% 👨‍👩‍👧‍👦 #!@ -n"}'
+        run: bash tests/runner-smoke.sh
 
   # breaks action.sh on purpose and runs it like a consumer would - the job must survive
   never-breaks-consumer:
@@ -67,7 +94,9 @@ jobs:
         sabotage: [exit-1, missing, syntax-error, not-executable]
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: sabotage action.sh
         env:
