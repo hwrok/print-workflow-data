@@ -13,13 +13,18 @@ github.run_attempt      : 1
 github.event_name       : push
 github.event.action     :
 github.event.pr_number  :
+github.secret_source    : Actions
 github.base_ref         :
 github.head_ref         :
 is_default_branch       : true
 is_default_target       : false
 github.ref              : refs/heads/main
 github.ref_name         : main
+github.ref_type         : branch
+github.ref_protected    : true
 github.sha              : abc1234def5678
+run_url                 : https://github.com/owner/repo/actions/runs/123456789
+job_url                 : https://github.com/owner/repo/actions/runs/123456789/job/99999
 ┌────────────────┐
 │ matrix context │
 └────────────────┘

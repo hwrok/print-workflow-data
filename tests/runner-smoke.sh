@@ -28,6 +28,9 @@ for title in "github context" "matrix context" "job context" "runner context" \
 done
 expect "github.repository" -Fx "github.repository       : $GITHUB_REPOSITORY"
 expect "github.sha" -Fx "github.sha              : $GITHUB_SHA"
+expect "run_url" -Fx "run_url                 : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+expect "job_url" -E "^job_url +: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/job/[0-9]+\$"
+expect "github.ref_type" -E '^github.ref_type +: (branch|tag)$'
 expect "job context status" -E '^status +: '
 expect "runner context os" -E "^os +: $RUNNER_OS\$"
 

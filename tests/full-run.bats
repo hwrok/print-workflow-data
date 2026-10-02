@@ -18,11 +18,16 @@ set_all_env_vars() {
   export GITHUB_EVENT_NAME="push"
   export EVENT_ACTION=""
   export PR_NUMBER=""
+  export SECRET_SOURCE="Actions"
+  export JOB_CHECK_RUN_ID="99999"
+  export GITHUB_SERVER_URL="https://github.com"
   export GITHUB_BASE_REF=""
   export GITHUB_HEAD_REF=""
   export DEFAULT_BRANCH="main"
   export GITHUB_REF="refs/heads/main"
   export GITHUB_REF_NAME="main"
+  export GITHUB_REF_TYPE="branch"
+  export GITHUB_REF_PROTECTED="true"
   export GITHUB_SHA="abc1234def5678"
   export MATRIX_CONTEXT='{"os":"ubuntu-latest","node":"20"}'
   export JOB_CONTEXT='{"status":"success","check_run_id":99999}'
@@ -89,6 +94,15 @@ set_all_env_vars() {
   assert_success
   assert_line "is_default_branch       : unknown"
   assert_line "is_default_target       : unknown"
+}
+
+@test "no check_run_id (GHES) leaves job_url empty but keeps run_url" {
+  set_all_env_vars
+  export JOB_CHECK_RUN_ID=""
+  run "${PROJECT_ROOT}/action.sh"
+  assert_success
+  assert_line "run_url                 : https://github.com/owner/repo/actions/runs/123456789"
+  assert_line --regexp '^job_url +: ?$'
 }
 
 @test "empty object sections render {}" {

@@ -74,6 +74,8 @@ jobs:
           TRIGGERING_ACTOR: ${{ github.triggering_actor }}
           EVENT_ACTION: ${{ github.event.action }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          SECRET_SOURCE: ${{ github.secret_source }}
+          JOB_CHECK_RUN_ID: ${{ job.check_run_id }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           MATRIX_CONTEXT: ${{ toJSON(matrix) }}
           JOB_CONTEXT: ${{ toJSON(job) }}

@@ -19,6 +19,14 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: print workflow data (uses self)
+        uses: ./
+
       - name: env vars
         run: env | grep -E '^(GITHUB_|RUNNER_|ImageOS=|ImageVersion=|ACTIONS_)' | grep -vE '_TOKEN=|_URL=.*token' | sort
 

@@ -63,6 +63,16 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     fi
   fi
 
+  run_url=""
+  job_url=""
+  if [ -n "$GITHUB_SERVER_URL" ] && [ -n "$GITHUB_REPOSITORY" ] && [ -n "$GITHUB_RUN_ID" ]; then
+    run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+    # check_run_id doesn't exist on GHES
+    if [ -n "$JOB_CHECK_RUN_ID" ]; then
+      job_url="$run_url/job/$JOB_CHECK_RUN_ID"
+    fi
+  fi
+
   github_context_body=$(cat <<EOF
 github.repository       : $GITHUB_REPOSITORY
 github.actor            : $GITHUB_ACTOR
@@ -76,13 +86,18 @@ github.run_attempt      : $GITHUB_RUN_ATTEMPT
 github.event_name       : $GITHUB_EVENT_NAME
 github.event.action     : $EVENT_ACTION
 github.event.pr_number  : $PR_NUMBER
+github.secret_source    : $SECRET_SOURCE
 github.base_ref         : $GITHUB_BASE_REF
 github.head_ref         : $GITHUB_HEAD_REF
 is_default_branch       : $is_default_branch
 is_default_target       : $is_default_target
 github.ref              : $GITHUB_REF
 github.ref_name         : $GITHUB_REF_NAME
+github.ref_type         : $GITHUB_REF_TYPE
+github.ref_protected    : $GITHUB_REF_PROTECTED
 github.sha              : $GITHUB_SHA
+run_url                 : $run_url
+job_url                 : $job_url
 EOF
   )
 
