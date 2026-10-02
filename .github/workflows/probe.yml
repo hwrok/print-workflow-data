@@ -1,0 +1,39 @@
+# TODO: kr -> delete before merge - throwaway dump of what the runner actually exposes
+name: probe
+
+on:
+  push:
+    branches: [feat/run-job-urls]
+
+permissions: {}
+
+jobs:
+  probe:
+    name: probe (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: env vars
+        run: env | grep -E '^(GITHUB_|RUNNER_|ImageOS=|ImageVersion=|ACTIONS_)' | grep -vE '_TOKEN=|_URL=.*token' | sort
+
+      - name: contexts
+        env:
+          GITHUB_CTX: ${{ toJSON(github) }}
+          JOB_CTX: ${{ toJSON(job) }}
+          RUNNER_CTX: ${{ toJSON(runner) }}
+          STRATEGY_CTX: ${{ toJSON(strategy) }}
+        run: |
+          echo "::group::github (minus event/token)"
+          jq 'del(.event, .token)' <<< "$GITHUB_CTX"
+          echo "::endgroup::"
+          for ctx in JOB_CTX RUNNER_CTX STRATEGY_CTX; do
+            echo "::group::$ctx"
+            jq . <<< "${!ctx}"
+            echo "::endgroup::"
+          done
