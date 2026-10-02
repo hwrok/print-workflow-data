@@ -65,12 +65,18 @@ setup() {
 }
 
 @test "jq unavailable falls back to raw output" {
-  # jq lives in /usr/bin on macOS + ubuntu, so an empty PATH is the only reliable hide
+  # jq lives in /usr/bin on macOS + ubuntu, so an empty PATH is the only reliable hide.
+  # restore it before asserting - bats' own cleanup needs rm
+  local orig_path="$PATH"
+
   PATH="$BATS_TEST_TMPDIR"
   run format_value '{"key":"value"}'
+  PATH="$orig_path"
   assert_success
   assert_output '{"key":"value"}'
 
+  PATH="$BATS_TEST_TMPDIR"
   run format_value "-n"
+  PATH="$orig_path"
   assert_output -- "-n"
 }
