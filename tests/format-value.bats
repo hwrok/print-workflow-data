@@ -18,10 +18,17 @@ setup() {
 }
 
 @test "flat json object renders as aligned key:value table" {
-  run format_value '{"status":"success","check_run_id":123}'
+  run format_value '{"status":"success","check_run_id":123,"note":"100% 👨‍👩‍👧‍👦 🏴󠁧󠁢󠁳󠁣󠁴󠁿 #!@"}'
   assert_success
-  assert_line --partial "check_run_id : 123"
-  assert_line --partial "status       : success"
+  assert_line "status       : success"
+  assert_line "check_run_id : 123"
+  assert_line "note         : 100% 👨‍👩‍👧‍👦 🏴󠁧󠁢󠁳󠁣󠁴󠁿 #!@"
+}
+
+@test "empty json object renders as {}" {
+  run format_value '{}'
+  assert_success
+  assert_output "{}"
 }
 
 @test "nested json object renders nested values as inline json" {
@@ -49,12 +56,27 @@ setup() {
   run format_value "just a plain string"
   assert_success
   assert_output "just a plain string"
+
+  # echo would eat these as flags
+  run format_value "-n"
+  assert_output -- "-n"
+  run format_value "-e"
+  assert_output -- "-e"
 }
 
 @test "jq unavailable falls back to raw output" {
-  # hide jq from PATH
-  PATH="/usr/bin:/bin"
+  # jq lives in /usr/bin on macOS + ubuntu, so an empty PATH is the only reliable hide.
+  # restore it before asserting - bats' own cleanup needs rm
+  local orig_path="$PATH"
+
+  PATH="$BATS_TEST_TMPDIR"
   run format_value '{"key":"value"}'
+  PATH="$orig_path"
   assert_success
   assert_output '{"key":"value"}'
+
+  PATH="$BATS_TEST_TMPDIR"
+  run format_value "-n"
+  PATH="$orig_path"
+  assert_output -- "-n"
 }

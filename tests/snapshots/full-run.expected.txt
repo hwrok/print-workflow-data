@@ -42,6 +42,7 @@ environment : github-hosted
 └───────────────┘
 deploy : true
 env    : staging
+msg    : ship it 🚀 100% #yolo -n
 ┌──────────────┐
 │ caller needs │
 └──────────────┘

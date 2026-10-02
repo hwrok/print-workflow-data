@@ -10,6 +10,7 @@
     "lint": "pnpm format && pnpm spellcheck",
     "lint:fix": "pnpm format:fix && pnpm spellcheck",
     "test": "bats tests/*.bats",
+    "test:runner": "bash tests/runner-smoke.sh",
     "pr:check": "pnpm test && pnpm format && pnpm spellcheck"
   },
   "devDependencies": {

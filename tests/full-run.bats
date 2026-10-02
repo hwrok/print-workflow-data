@@ -27,7 +27,7 @@ set_all_env_vars() {
   export MATRIX_CONTEXT='{"os":"ubuntu-latest","node":"20"}'
   export JOB_CONTEXT='{"status":"success","check_run_id":99999}'
   export RUNNER_CONTEXT='{"os":"Linux","arch":"X64","name":"runner-1","environment":"github-hosted"}'
-  export CALLER_INPUTS='{"deploy":true,"env":"staging"}'
+  export CALLER_INPUTS='{"deploy":true,"env":"staging","msg":"ship it 🚀 100% #yolo -n"}'
   export CALLER_NEEDS='{"some_dep":{"result":"success"}}'
   export CALLER_VARS='{"SOME_VAR":"the-value"}'
   export EXTRAS='{"custom":"data"}'
@@ -50,6 +50,8 @@ set_all_env_vars() {
   export EXTRAS=""
   run "${PROJECT_ROOT}/action.sh"
   assert_success
+  assert_line "n/a"
+  refute_output --partial "null"
 }
 
 @test "exits 0 with garbage input" {
@@ -62,6 +64,43 @@ set_all_env_vars() {
   export EXTRAS=""
   run "${PROJECT_ROOT}/action.sh"
   assert_success
+  assert_line "not json at all {{{"
+  assert_line "<xml>nope</xml>"
+  assert_line "12345"
+  assert_line "🔥"
+}
+
+@test "pr into default branch flags is_default_target" {
+  set_all_env_vars
+  export GITHUB_EVENT_NAME="pull_request"
+  export GITHUB_BASE_REF="main"
+  export GITHUB_HEAD_REF="fix/thing"
+  export GITHUB_REF_NAME="7/merge"
+  run "${PROJECT_ROOT}/action.sh"
+  assert_success
+  assert_line "is_default_branch       : false"
+  assert_line "is_default_target       : true"
+}
+
+@test "missing default branch reports unknown instead of guessing" {
+  set_all_env_vars
+  export DEFAULT_BRANCH=""
+  run "${PROJECT_ROOT}/action.sh"
+  assert_success
+  assert_line "is_default_branch       : unknown"
+  assert_line "is_default_target       : unknown"
+}
+
+@test "empty object sections render {}" {
+  set_all_env_vars
+  export CALLER_INPUTS='{}'
+  export CALLER_NEEDS='{}'
+  run "${PROJECT_ROOT}/action.sh"
+  assert_success
+  local clean
+  clean="$(strip_ansi "$output")"
+  [[ "$clean" == *$'caller inputs │\n└───────────────┘\n{}'* ]]
+  [[ "$clean" == *$'caller needs │\n└──────────────┘\n{}'* ]]
 }
 
 @test "snapshot: full output matches expected" {
