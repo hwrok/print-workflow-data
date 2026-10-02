@@ -78,6 +78,7 @@ jobs:
           JOB_CHECK_RUN_ID: ${{ job.check_run_id }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           MATRIX_CONTEXT: ${{ toJSON(matrix) }}
+          STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
           JOB_CONTEXT: ${{ toJSON(job) }}
           RUNNER_CONTEXT: ${{ toJSON(runner) }}
           CALLER_INPUTS: ${{ toJSON(inputs) }}

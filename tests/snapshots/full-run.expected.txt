@@ -1,35 +1,56 @@
+┌─────────┐
+│ derived │
+└─────────┘
+is_default_branch : true
+is_default_target : false
+run_url           : https://github.com/owner/repo/actions/runs/123456789
+job_url           : https://github.com/owner/repo/actions/runs/123456789/job/99999
 ┌────────────────┐
 │ github context │
 └────────────────┘
-github.repository       : owner/repo
-github.actor            : testuser
-github.triggering_actor : testuser
-github.job              : build
-github.workflow         : CI
-github.workflow_ref     : owner/repo/.github/workflows/ci.yml@refs/heads/main
-github.run_id           : 123456789
-github.run_number       : 42
-github.run_attempt      : 1
-github.event_name       : push
-github.event.action     :
-github.event.pr_number  :
-github.secret_source    : Actions
-github.base_ref         :
-github.head_ref         :
-is_default_branch       : true
-is_default_target       : false
-github.ref              : refs/heads/main
-github.ref_name         : main
-github.ref_type         : branch
-github.ref_protected    : true
-github.sha              : abc1234def5678
-run_url                 : https://github.com/owner/repo/actions/runs/123456789
-job_url                 : https://github.com/owner/repo/actions/runs/123456789/job/99999
+github.actor               : testuser
+github.actor_id            : 13083536
+github.api_url             : https://api.github.com
+github.base_ref            :
+github.event.action        :
+github.event.pr_number     :
+github.event_name          : push
+github.event_path          : /home/runner/work/_temp/_github_workflow/event.json
+github.graphql_url         : https://api.github.com/graphql
+github.head_ref            :
+github.job                 : build
+github.ref                 : refs/heads/main
+github.ref_name            : main
+github.ref_protected       : true
+github.ref_type            : branch
+github.repository          : owner/repo
+github.repository_id       : 1061921084
+github.repository_owner    : owner
+github.repository_owner_id : 221171328
+github.retention_days      : 90
+github.run_attempt         : 1
+github.run_id              : 123456789
+github.run_number          : 42
+github.secret_source       : Actions
+github.server_url          : https://github.com
+github.sha                 : abc1234def5678
+github.triggering_actor    : testuser
+github.workflow            : CI
+github.workflow_ref        : owner/repo/.github/workflows/ci.yml@refs/heads/main
+github.workflow_sha        : abc1234def5678
+github.workspace           : /home/runner/work/repo/repo
 ┌────────────────┐
 │ matrix context │
 └────────────────┘
 os   : ubuntu-latest
 node : 20
+┌──────────────────┐
+│ strategy context │
+└──────────────────┘
+fail-fast    : false
+job-index    : 0
+job-total    : 3
+max-parallel : 3
 ┌─────────────┐
 │ job context │
 └─────────────┘

@@ -73,36 +73,53 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     fi
   fi
 
-  github_context_body=$(cat <<EOF
-github.repository       : $GITHUB_REPOSITORY
-github.actor            : $GITHUB_ACTOR
-github.triggering_actor : $TRIGGERING_ACTOR
-github.job              : $GITHUB_JOB
-github.workflow         : $GITHUB_WORKFLOW
-github.workflow_ref     : $GITHUB_WORKFLOW_REF
-github.run_id           : $GITHUB_RUN_ID
-github.run_number       : $GITHUB_RUN_NUMBER
-github.run_attempt      : $GITHUB_RUN_ATTEMPT
-github.event_name       : $GITHUB_EVENT_NAME
-github.event.action     : $EVENT_ACTION
-github.event.pr_number  : $PR_NUMBER
-github.secret_source    : $SECRET_SOURCE
-github.base_ref         : $GITHUB_BASE_REF
-github.head_ref         : $GITHUB_HEAD_REF
-is_default_branch       : $is_default_branch
-is_default_target       : $is_default_target
-github.ref              : $GITHUB_REF
-github.ref_name         : $GITHUB_REF_NAME
-github.ref_type         : $GITHUB_REF_TYPE
-github.ref_protected    : $GITHUB_REF_PROTECTED
-github.sha              : $GITHUB_SHA
-run_url                 : $run_url
-job_url                 : $job_url
+  derived_body=$(cat <<EOF
+is_default_branch : $is_default_branch
+is_default_target : $is_default_target
+run_url           : $run_url
+job_url           : $job_url
 EOF
   )
 
+  github_context_body=$(cat <<EOF
+github.actor               : $GITHUB_ACTOR
+github.actor_id            : $GITHUB_ACTOR_ID
+github.api_url             : $GITHUB_API_URL
+github.base_ref            : $GITHUB_BASE_REF
+github.event.action        : $EVENT_ACTION
+github.event.pr_number     : $PR_NUMBER
+github.event_name          : $GITHUB_EVENT_NAME
+github.event_path          : $GITHUB_EVENT_PATH
+github.graphql_url         : $GITHUB_GRAPHQL_URL
+github.head_ref            : $GITHUB_HEAD_REF
+github.job                 : $GITHUB_JOB
+github.ref                 : $GITHUB_REF
+github.ref_name            : $GITHUB_REF_NAME
+github.ref_protected       : $GITHUB_REF_PROTECTED
+github.ref_type            : $GITHUB_REF_TYPE
+github.repository          : $GITHUB_REPOSITORY
+github.repository_id       : $GITHUB_REPOSITORY_ID
+github.repository_owner    : $GITHUB_REPOSITORY_OWNER
+github.repository_owner_id : $GITHUB_REPOSITORY_OWNER_ID
+github.retention_days      : $GITHUB_RETENTION_DAYS
+github.run_attempt         : $GITHUB_RUN_ATTEMPT
+github.run_id              : $GITHUB_RUN_ID
+github.run_number          : $GITHUB_RUN_NUMBER
+github.secret_source       : $SECRET_SOURCE
+github.server_url          : $GITHUB_SERVER_URL
+github.sha                 : $GITHUB_SHA
+github.triggering_actor    : $TRIGGERING_ACTOR
+github.workflow            : $GITHUB_WORKFLOW
+github.workflow_ref        : $GITHUB_WORKFLOW_REF
+github.workflow_sha        : $GITHUB_WORKFLOW_SHA
+github.workspace           : $GITHUB_WORKSPACE
+EOF
+  )
+
+  print_section "derived" "$derived_body"
   print_section "github context" "$github_context_body"
   print_section "matrix context" "$(format_value "$MATRIX_CONTEXT")"
+  print_section "strategy context" "$(format_value "$STRATEGY_CONTEXT")"
   print_section "job context" "$(format_value "$JOB_CONTEXT")"
   print_section "runner context" "$(format_value "$RUNNER_CONTEXT")"
   print_section "caller inputs" "$(format_value "$CALLER_INPUTS")"
