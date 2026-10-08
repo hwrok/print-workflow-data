@@ -21,7 +21,7 @@
     "bats": "1.13.0",
     "bats-assert": "2.2.4",
     "bats-support": "0.3.0",
-    "cspell": "10.0.1",
+    "cspell": "10.3.3",
     "prettier": "3.9.9"
   }
 }
