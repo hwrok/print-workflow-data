@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>hwrok/action-renovate#v1.4.3"],
+  "extends": ["github>hwrok/action-renovate#v1.4.5"],
   "packageRules": [
     {
       "description": "smoke-test checks the floating v1 tag consumers see - never pin it",
